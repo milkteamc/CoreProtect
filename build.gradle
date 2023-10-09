@@ -71,6 +71,7 @@ ext {
 
 processResources {
     include 'plugin.yml'
+    include 'itemTW.yml'
     // Whole lotta boilerplate to get the same functionality as Maven here.
     // Replace this if Gradle ever lets us configure the filter before filtering.
     filter(new Transformer<String, String>() {
