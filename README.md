@@ -8,8 +8,10 @@
 
 關於 CoreProtect-ZHTW
 ===========
-此版本基於原版 CoreProtect 修改，讓物品名稱顯示中文，且可以直接和原始版本無縫接軌，且無須任何修改，十分方便。    
-![圖片](https://github.com/milkteamc/CoreProtect/assets/95519633/1ab66bf0-d353-45e2-a629-fadd493205f4)
+此版本基於原版 CoreProtect 修改，讓物品名稱顯示中文，且可以直接和原始版本無縫接軌，且無須任何修改，十分方便。  
+請前往：<https://github.com/milkteamc/CoreProtect/releases> 下載最新版本。  
+如果有任何問題，請前往我的 [Discord](https://discord.gg/uQ4UXANnP2) 回報！  
+![圖片](https://github.com/milkteamc/CoreProtect/assets/95519633/1ab66bf0-d353-45e2-a629-fadd493205f4)  
 
 關於原版 CoreProtect
 ===========
