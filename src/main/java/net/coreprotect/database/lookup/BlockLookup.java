@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Locale;
 
+import tw.maoyue.ItemTW;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
 import org.bukkit.command.CommandSender;
@@ -130,7 +131,7 @@ public class BlockLookup {
                     target = target.split(":")[1];
                 }
 
-                resultTextBuilder.append(timeAgo + " " + tag + " ").append(Phrase.build(phrase, Color.DARK_AQUA + rbFormat + resultUser + Color.WHITE + rbFormat, Color.DARK_AQUA + rbFormat + target + Color.WHITE, selector)).append("\n");
+                resultTextBuilder.append(timeAgo + " " + tag + " ").append(Phrase.build(phrase, Color.DARK_AQUA + rbFormat + resultUser + Color.WHITE + rbFormat, Color.DARK_AQUA + rbFormat + ItemTW.getItemTW(target) + Color.WHITE, selector)).append("\n");
                 PluginChannelListener.getInstance().sendData(commandSender, resultTime, phrase, selector, resultUser, target, -1, x, y, z, worldId, rbFormat, false, tag.contains("+"));
             }
 

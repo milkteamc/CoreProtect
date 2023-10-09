@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import net.kyori.adventure.text.event.HoverEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -117,7 +118,20 @@ public class Util extends Queue {
         return getBlockId(material.name(), true);
     }
 
+    // ZHTW start
     public static String getCoordinates(String command, int worldId, int x, int y, int z, boolean displayWorld, boolean italic) {
+        return getCoordinates(command, worldId, x, y, z, displayWorld, italic, false);
+    }
+    // ZHTW end
+    public static String getCoordinates(String command, int worldId, int x, int y, int z, boolean displayWorld, boolean italic, boolean privacy) {
+        // ZHTW start
+        if (privacy) {
+            worldId = 0;
+            x = 0;
+            y = 0;
+            z = 0;
+        }
+        // ZHTW end
         StringBuilder message = new StringBuilder(Chat.COMPONENT_TAG_OPEN + Chat.COMPONENT_COMMAND);
 
         StringBuilder worldDisplay = new StringBuilder();
@@ -227,7 +241,7 @@ public class Util extends Queue {
             pagination.append(Color.GREY + ")");
         }
 
-        return message.append(Color.WHITE + backArrow + Color.DARK_AQUA + Phrase.build(Phrase.LOOKUP_PAGE, Color.WHITE + page + "/" + totalPages) + nextArrow + pagination).toString();
+        return message.append(Color.WHITE + backArrow + Color.DARK_AQUA + Phrase.build(Phrase.LOOKUP_PAGE, Color.DARK_AQUA + page + "/" + totalPages) + Color.WHITE + nextArrow + pagination).toString();
     }
 
     public static String getTimeSince(long resultTime, long currentTime, boolean component) {
@@ -266,6 +280,20 @@ public class Util extends Queue {
 
         return message.toString();
     }
+    // ZHTW start
+    public static HoverEvent<HoverEvent.ShowItem> getHoverEvent(byte[] metadata, int type, int amount) {
+        ItemStack item = new ItemStack(Util.getType(type), amount);
+
+        if (metadata == null) {
+            return item.asHoverEvent();
+        }
+
+        item = (ItemStack) Rollback.populateItemStack(item, metadata)[2];
+        return item.asHoverEvent();
+    }
+    // ZHTW end
+
+
 
     public static String getEnchantments(byte[] metadata, int type, int amount) {
         if (metadata == null) {
@@ -1639,5 +1667,4 @@ public class Util extends Queue {
     public static boolean isSideGlowing(boolean isFront, int data) {
         return ((isFront && (data == 1 || data == 3)) || (!isFront && (data == 2 || data == 3)));
     }
-
 }
