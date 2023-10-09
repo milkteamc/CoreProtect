@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import tw.maoyue.ItemTW;
 import org.bukkit.Bukkit;
 import org.bukkit.FireworkEffect;
 import org.bukkit.Material;
@@ -28,30 +29,13 @@ import org.bukkit.potion.PotionEffect;
 
 import net.coreprotect.bukkit.BukkitAdapter;
 import net.coreprotect.utility.Color;
-import net.coreprotect.utility.ItemUtils;
-import net.coreprotect.utility.StringUtils;
+import net.coreprotect.utility.Util;
 
 public class ItemMetaHandler {
 
     public static String getEnchantmentName(Enchantment enchantment, int level) {
-        String name = enchantment.getKey().getKey();
-
-        switch (name) {
-            case "vanishing_curse":
-                name = "Curse of Vanishing";
-                break;
-            case "binding_curse":
-                name = "Curse of Binding";
-                break;
-            default:
-                name = StringUtils.capitalize(name.replace("_", " "), true);
-                break;
-        }
-
-        if (enchantment.getMaxLevel() > 1) {
+        String name = ItemTW.getEnchantmentTW(enchantment.getKey().getKey());
             name = name + " " + getEnchantmentLevel(level);
-        }
-
         return name;
     }
 
@@ -116,22 +100,22 @@ public class ItemMetaHandler {
         return result;
     }
 
-    public static List<List<Map<String, Object>>> serialize(ItemStack item, Material type, String faceData, int slot) {
+    public static List<List<Map<String, Object>>> seralize(ItemStack item, Material type, String faceData, int slot) {
         List<List<Map<String, Object>>> metadata = new ArrayList<>();
         List<Map<String, Object>> list = new ArrayList<>();
         List<Object> modifiers = new ArrayList<>();
 
-        if (item != null && item.hasItemMeta() && item.getItemMeta() != null) {
+        if (item.hasItemMeta() && item.getItemMeta() != null) {
             ItemMeta itemMeta = item.getItemMeta().clone();
 
             if (itemMeta.hasAttributeModifiers()) {
                 for (Map.Entry<Attribute, AttributeModifier> entry : itemMeta.getAttributeModifiers().entries()) {
-                    Map<Object, Map<String, Object>> attributeList = new HashMap<>();
+                    Map<Attribute, Map<String, Object>> attributeList = new HashMap<>();
                     Attribute attribute = entry.getKey();
                     AttributeModifier modifier = entry.getValue();
 
                     itemMeta.removeAttributeModifier(attribute, modifier);
-                    attributeList.put(BukkitAdapter.ADAPTER.getRegistryKey(attribute), modifier.serialize());
+                    attributeList.put(attribute, modifier.serialize());
                     modifiers.add(attributeList);
                 }
             }
@@ -217,7 +201,7 @@ public class ItemMetaHandler {
                     list = new ArrayList<>();
 
                     for (ItemStack chargedProjectile : subMeta.getChargedProjectiles()) {
-                        Map<String, Object> itemMap = ItemUtils.serializeItemStack(chargedProjectile, null, slot);
+                        Map<String, Object> itemMap = Util.serializeItemStack(chargedProjectile, null, slot);
                         if (itemMap.size() > 0) {
                             list.add(itemMap);
                         }

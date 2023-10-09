@@ -19,7 +19,7 @@ public class Selector {
         throw new IllegalStateException("Utility class");
     }
 
-    protected static String processSelection(String output, String param, String color) {
+    public static String processSelection(String output, String param, String color) {
         String substring = output;
         try {
             substring = substring.substring(substring.indexOf("{") + 1);
