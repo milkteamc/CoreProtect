@@ -6,6 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import tw.maoyue.ItemTW;
+import net.coreprotect.utility.Chat;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
@@ -21,11 +26,11 @@ import net.coreprotect.utility.Util;
 public class ChestTransactionLookup {
 
     public static List<String> performLookup(String command, Statement statement, Location l, CommandSender commandSender, int page, int limit, boolean exact) {
-        List<String> result = new ArrayList<>();
+        // List<String> result = new ArrayList<>();
 
         try {
             if (l == null) {
-                return result;
+                return List.of();
             }
 
             if (command == null) {
@@ -83,7 +88,7 @@ public class ChestTransactionLookup {
                 int resultAmount = results.getInt("amount");
                 int resultRolledBack = results.getInt("rolled_back");
                 byte[] resultMetadata = results.getBytes("metadata");
-                String tooltip = Util.getEnchantments(resultMetadata, resultType, resultAmount);
+                HoverEvent<HoverEvent.ShowItem> hoverEvent = Util.getHoverEvent(resultMetadata, resultType, resultAmount);
 
                 if (ConfigHandler.playerIdCacheReversed.get(resultUserId) == null) {
                     UserStatement.loadName(statement.getConnection(), resultUserId);
@@ -93,7 +98,7 @@ public class ChestTransactionLookup {
                 String timeAgo = Util.getTimeSince(resultTime, time, true);
 
                 if (!found) {
-                    result.add(new StringBuilder(Color.WHITE + "----- " + Color.DARK_AQUA + Phrase.build(Phrase.CONTAINER_HEADER) + Color.WHITE + " ----- " + Util.getCoordinates(command, worldId, x, y, z, false, false)).toString());
+                    Chat.sendComponent(commandSender, (Color.WHITE + "----- " + Color.DARK_AQUA + Phrase.build(Phrase.CONTAINER_HEADER) + Color.WHITE + " ----- " + Util.getCoordinates(command, worldId, x, y, z, false, false)));
                 }
                 found = true;
 
@@ -119,23 +124,32 @@ public class ChestTransactionLookup {
                     target = target.split(":")[1];
                 }
 
-                result.add(new StringBuilder(timeAgo + " " + tag + " " + Phrase.build(Phrase.LOOKUP_CONTAINER, Color.DARK_AQUA + rbFormat + resultUser + Color.WHITE + rbFormat, "x" + resultAmount, Util.createTooltip(Color.DARK_AQUA + rbFormat + target, tooltip) + Color.WHITE, selector)).toString());
+                String[] timeagoSplit = timeAgo.split("\\|", 3);
+                commandSender.sendMessage(Component.empty()
+                        .append(LegacyComponentSerializer.legacySection().deserialize(timeagoSplit[2].replace(Chat.COMPONENT_TAG_CLOSE, ""))
+                                .hoverEvent(HoverEvent.showText(LegacyComponentSerializer.legacySection().deserialize(timeagoSplit[1]))))
+                        .append(LegacyComponentSerializer.legacySection().deserialize(" " + tag + " "))
+                        .append(LegacyComponentSerializer.legacySection().deserialize(Color.DARK_AQUA + rbFormat + resultUser + Color.WHITE + rbFormat + " " + Phrase.getPhraseSelector(Phrase.LOOKUP_CONTAINER, selector) + " "))
+                        .append(LegacyComponentSerializer.legacySection().deserialize(Color.DARK_AQUA + rbFormat + ItemTW.getItemTW(target, false))
+                                .hoverEvent(hoverEvent))
+                        .append(LegacyComponentSerializer.legacySection().deserialize(Color.WHITE + "x" + resultAmount + ".")));
+                // Chat.sendComponent(commandSender, (timeAgo + " " + tag + " " + Phrase.build(Phrase.LOOKUP_CONTAINER, Color.DARK_AQUA + rbFormat + resultUser + Color.WHITE + rbFormat, "x" + resultAmount, Util.createTooltip(Color.DARK_AQUA + rbFormat + ItemTW.getItemTW(target), tooltip) + Color.WHITE, selector)));
                 PluginChannelListener.getInstance().sendData(commandSender, resultTime, Phrase.LOOKUP_CONTAINER, selector, resultUser, target, resultAmount, x, y, z, worldId, rbFormat, true, tag.contains("+"));
             }
             results.close();
 
             if (found) {
                 if (count > limit) {
-                    result.add(Color.WHITE + "-----");
-                    result.add(Util.getPageNavigation(command, page, totalPages));
+                    Chat.sendComponent(commandSender, Color.WHITE + "-----");
+                    Chat.sendComponent(commandSender, Util.getPageNavigation(command, page, totalPages));
                 }
             }
             else {
                 if (rowMax > count && count > 0) {
-                    result.add(Color.DARK_AQUA + "CoreProtect " + Color.WHITE + "- " + Phrase.build(Phrase.NO_RESULTS_PAGE, Selector.SECOND));
+                    Chat.sendComponent(commandSender, Color.DARK_AQUA + "CoreProtect " + Color.WHITE + "- " + Phrase.build(Phrase.NO_RESULTS_PAGE, Selector.SECOND));
                 }
                 else {
-                    result.add(Color.DARK_AQUA + "CoreProtect " + Color.WHITE + "- " + Phrase.build(Phrase.NO_DATA_LOCATION, Selector.SECOND));
+                    Chat.sendComponent(commandSender, Color.DARK_AQUA + "CoreProtect " + Color.WHITE + "- " + Phrase.build(Phrase.NO_DATA_LOCATION, Selector.SECOND));
                 }
             }
 
@@ -147,7 +161,7 @@ public class ChestTransactionLookup {
             e.printStackTrace();
         }
 
-        return result;
+        return List.of();
     }
 
 }

@@ -295,7 +295,7 @@ public enum Phrase {
 
     public static String getPhraseSelector(Phrase phrase, String selector) {
         String translatedPhrase = phrase.getTranslatedPhrase();
-        Pattern phrasePattern = Pattern.compile("(\\{[a-zA-Z| ]+})");
+        Pattern phrasePattern = Pattern.compile("(\\{[a-zA-Z\u4e00-\u9f98| ]+})");
         Matcher patternMatch = phrasePattern.matcher(translatedPhrase);
         String match = "";
         if (patternMatch.find()) {

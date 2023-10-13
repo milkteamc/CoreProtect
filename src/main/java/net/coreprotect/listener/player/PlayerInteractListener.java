@@ -8,17 +8,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.bukkit.block.*;
+import tw.maoyue.OwnerUtils;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Chest;
-import org.bukkit.block.DoubleChest;
-import org.bukkit.block.Jukebox;
-import org.bukkit.block.Sign;
 import org.bukkit.block.data.Bisected;
 import org.bukkit.block.data.Bisected.Half;
 import org.bukkit.block.data.BlockData;
@@ -260,6 +256,7 @@ public final class PlayerInteractListener extends Queue implements Listener {
                         event.setCancelled(true);
                     }
                     else if (isContainerBlock && Config.getConfig(world).ITEM_TRANSACTIONS) {
+                        Container container000 = null;
                         Location location = null;
                         if (type.equals(Material.CHEST) || type.equals(Material.TRAPPED_CHEST)) {
                             Chest chest = (Chest) clickedBlock.getState();
@@ -268,9 +265,24 @@ public final class PlayerInteractListener extends Queue implements Listener {
                             if (inventoryHolder instanceof DoubleChest) {
                                 DoubleChest doubleChest = (DoubleChest) inventoryHolder;
                                 location = doubleChest.getLocation();
+                                container000 = (Container) doubleChest.getLeftSide(false);
                             }
                             else {
                                 location = chest.getLocation();
+                            }
+                        }
+
+                        if (container000 == null) {
+                            BlockState blockState000 = block.getState(false);
+                            if (blockState000 instanceof Container) {
+                                container000 = (Container) blockState000;
+                            }
+                        }
+                        if (container000 != null) {
+                            if (!OwnerUtils.isOwner(container000, player)) {
+                                event.setCancelled(true);
+                                Chat.sendMessage(player, Color.DARK_AQUA + "CoreProtect " + Color.WHITE + "- " + "\u4f60\u4e0d\u80fd\u67e5\u8a62\u6b64\u5bb9\u5668\uff0c\u4f60\u4e0d\u662f\u5bb9\u5668\u7684\u64c1\u6709\u8005\u3002");
+                                return;
                             }
                         }
 
