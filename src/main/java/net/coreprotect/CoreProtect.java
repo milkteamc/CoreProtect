@@ -1,10 +1,14 @@
 package net.coreprotect;
 
 import java.io.File;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
 import tw.maoyue.ItemTW;
 import org.bstats.bukkit.MetricsLite;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginDescriptionFile;
@@ -26,6 +30,7 @@ import net.coreprotect.thread.NetworkHandler;
 import net.coreprotect.thread.Scheduler;
 import net.coreprotect.utility.Chat;
 import net.coreprotect.utility.Color;
+import net.coreprotect.utility.Teleport;
 import net.coreprotect.utility.Util;
 import org.jetbrains.annotations.NotNull;
 
@@ -178,6 +183,15 @@ public final class CoreProtect extends JavaPlugin {
             if (ConfigHandler.serverRunning && PaperAdapter.ADAPTER.isStopping(plugin.getServer())) {
                 for (Player player : plugin.getServer().getOnlinePlayers()) {
                     PlayerQuitListener.queuePlayerQuit(player);
+                }
+            }
+
+            if (!ConfigHandler.isFolia) {
+                Iterator<Entry<Location, BlockData>> iterator = Teleport.revertBlocks.entrySet().iterator();
+                while (iterator.hasNext()) {
+                    Entry<Location, BlockData> entry = iterator.next();
+                    entry.getKey().getBlock().setBlockData(entry.getValue());
+                    iterator.remove();
                 }
             }
 

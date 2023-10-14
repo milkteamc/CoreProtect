@@ -1021,6 +1021,10 @@ public class Util extends Queue {
         return type.isSolid();
     }
 
+    public static boolean passableBlock(Block block) {
+        return block.isPassable();
+    }
+
     public static Material getType(Block block) {
         // Temp code
         return block.getType();
