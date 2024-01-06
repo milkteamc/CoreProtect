@@ -1,6 +1,7 @@
 package net.coreprotect.listener.entity;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -122,8 +123,11 @@ public final class EntityDeathListener extends Queue implements Listener {
             e = isCommand ? "#command" : "";
         }
 
+        List<DamageCause> validDamageCauses = Arrays.asList(DamageCause.KILL, DamageCause.POISON, DamageCause.THORNS, DamageCause.MAGIC, DamageCause.WITHER);
+
         boolean skip = true;
-        if (!Config.getConfig(entity.getWorld()).SKIP_GENERIC_DATA || (!(entity instanceof Zombie) && !(entity instanceof Skeleton))) {
+        EntityDamageEvent.DamageCause cause = damage.getCause();
+        if (!Config.getConfig(entity.getWorld()).SKIP_GENERIC_DATA || (!(entity instanceof Zombie) && !(entity instanceof Skeleton)) || validDamageCauses.contains(cause)) {
             skip = false;
         }
 
@@ -172,7 +176,6 @@ public final class EntityDeathListener extends Queue implements Listener {
             }
         }
         else {
-            EntityDamageEvent.DamageCause cause = damage.getCause();
             if (cause.equals(EntityDamageEvent.DamageCause.FIRE)) {
                 e = "#fire";
             }
@@ -189,6 +192,12 @@ public final class EntityDeathListener extends Queue implements Listener {
             }
             else if (cause.equals(EntityDamageEvent.DamageCause.MAGIC)) {
                 e = "#magic";
+            }
+            else if (cause.equals(EntityDamageEvent.DamageCause.WITHER)) {
+                e = "#wither_effect";
+            }
+            else if (!cause.name().contains("_")) {
+                e = "#" + cause.name().toLowerCase(Locale.ROOT);
             }
         }
 
@@ -225,7 +234,7 @@ public final class EntityDeathListener extends Queue implements Listener {
             }
         }
 
-        if (e.startsWith("#wither")) {
+        if (e.startsWith("#wither") && !e.equals("#wither_effect")) {
             e = "#wither";
         }
 
@@ -528,6 +537,16 @@ public final class EntityDeathListener extends Queue implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onEntityDeath(EntityDeathEvent event) {
+        /*
+        System.out.println("ENTITY DEATH - " + event.getEntity().getName());
+        if (event.getEntity().getKiller() != null) {
+            System.out.println("^ (killer): " + event.getEntity().getKiller().getName());
+        }
+        else if (event.getEntity().getLastDamageCause() != null) {
+            System.out.println("^ (damage cause): " + event.getEntity().getLastDamageCause().getEntity().getName());
+        }
+        */
+
         LivingEntity entity = event.getEntity();
         if (LogUtils.notLogEntity(entity)) {
             return;
