@@ -105,7 +105,7 @@ public class ItemMetaHandler {
         List<Map<String, Object>> list = new ArrayList<>();
         List<Object> modifiers = new ArrayList<>();
 
-        if (item.hasItemMeta() && item.getItemMeta() != null) {
+        if (item != null && item.hasItemMeta() && item.getItemMeta() != null) {
             ItemMeta itemMeta = item.getItemMeta().clone();
 
             if (itemMeta.hasAttributeModifiers()) {
