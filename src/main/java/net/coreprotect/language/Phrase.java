@@ -217,7 +217,7 @@ public enum Phrase {
     final private static Set<Phrase> HEADERS = new HashSet<>(Arrays.asList(Phrase.CONTAINER_HEADER, Phrase.HELP_HEADER, Phrase.INTERACTIONS_HEADER, Phrase.LOOKUP_HEADER, Phrase.SIGN_HEADER, Phrase.UPDATE_HEADER));
     final private static Set<String> COLORS = new HashSet<>(Arrays.asList(Color.WHITE, Color.DARK_AQUA));
     final private static String SPLIT = ":";
-    final private static String FULL_WIDTH_SPLIT = "：";
+    final private static String FULL_WIDTH_SPLIT = "\uff1a";
 
     public String getPhrase() {
         return Language.getPhrase(this);
