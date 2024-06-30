@@ -156,14 +156,14 @@ public class Util extends Queue {
         // back arrow
         String backArrow = "";
         if (page > 1) {
-            backArrow = "◀ ";
+            backArrow = "\u25c0 ";
             backArrow = Chat.COMPONENT_TAG_OPEN + Chat.COMPONENT_COMMAND + "|/" + command + " l " + (page - 1) + "|" + backArrow + Chat.COMPONENT_TAG_CLOSE;
         }
 
         // next arrow
         String nextArrow = " ";
         if (page < totalPages) {
-            nextArrow = " ▶ ";
+            nextArrow = " \u25b6 ";
             nextArrow = Chat.COMPONENT_TAG_OPEN + Chat.COMPONENT_COMMAND + "|/" + command + " l " + (page + 1) + "|" + nextArrow + Chat.COMPONENT_TAG_CLOSE;
         }
 
