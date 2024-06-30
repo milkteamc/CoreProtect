@@ -9,6 +9,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import tw.maoyue.ItemTW;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -860,7 +864,7 @@ public class LookupCommand {
 
                                                     String tag = (action != 0 ? Color.GREEN + "+" : Color.RED + "-");
                                                     Chat.sendComponent(player2, timeago + " " + tag + " " + Color.DARK_AQUA + Phrase.build(Phrase.LOOKUP_LOGIN, Color.DARK_AQUA + dplayer + Color.WHITE, (action != 0 ? Selector.FIRST : Selector.SECOND)));
-                                                    Chat.sendComponent(player2, Color.WHITE + leftPadding + Color.GREY + "^ " + Util.getCoordinates(command.getName(), wid, x, y, z, true, true) + "");
+                                                    Chat.sendComponent(player2, Color.WHITE + leftPadding + Color.GREY + "^ " + Util.getCoordinates(command.getName(), wid, x, y, z, true, true, !dplayer.equals(player2.getName()) && !player2.hasPermission("coreprotect.teleport")) + "");
                                                     PluginChannelListener.getInstance().sendInfoData(player2, Integer.parseInt(time), Phrase.LOOKUP_LOGIN, (action != 0 ? Selector.FIRST : Selector.SECOND), dplayer, -1, x, y, z, wid);
                                                 }
                                             }
@@ -894,7 +898,7 @@ public class LookupCommand {
                                                     }
 
                                                     Chat.sendComponent(player2, timeago + " " + Color.WHITE + "- " + Color.DARK_AQUA + dplayer + ": " + Color.WHITE, message);
-                                                    Chat.sendComponent(player2, Color.WHITE + leftPadding + Color.GREY + "^ " + Util.getCoordinates(command.getName(), wid, x, y, z, true, true) + "");
+                                                    Chat.sendComponent(player2, Color.WHITE + leftPadding + Color.GREY + "^ " + Util.getCoordinates(command.getName(), wid, x, y, z, true, true, !dplayer.equals(player2.getName()) && !player2.hasPermission("coreprotect.teleport")) + "");
                                                     PluginChannelListener.getInstance().sendMessageData(player2, Integer.parseInt(time), dplayer, message, true, x, y, z, wid);
                                                 }
                                             }
@@ -915,7 +919,7 @@ public class LookupCommand {
                                                     Material blockType = Util.itemFilter(Util.getType(dtype), (Integer.parseInt(data[13]) == 0));
                                                     String dname = Util.nameFilter(blockType.name().toLowerCase(Locale.ROOT), ddata);
                                                     byte[] metadata = data[11] == null ? null : data[11].getBytes(StandardCharsets.ISO_8859_1);
-                                                    String tooltip = Util.getEnchantments(metadata, dtype, amount);
+                                                    HoverEvent<HoverEvent.ShowItem> hoverEvent = Util.getHoverEvent(metadata, dtype, amount);
 
                                                     String selector = Selector.FIRST;
                                                     String tag = Color.WHITE + "-";
@@ -944,7 +948,16 @@ public class LookupCommand {
                                                         tag = (daction == 0 ? Color.GREEN + "+" : Color.RED + "-");
                                                     }
 
-                                                    Chat.sendComponent(player2, timeago + " " + tag + " " + Phrase.build(Phrase.LOOKUP_CONTAINER, Color.DARK_AQUA + rbd + dplayer + Color.WHITE + rbd, "x" + amount, Util.createTooltip(Color.DARK_AQUA + rbd + dname, tooltip) + Color.WHITE, selector));
+                                                    String[] timeagoSplit = timeago.split("\\|", 3);
+                                                    player2.sendMessage(Component.empty()
+                                                            .append(LegacyComponentSerializer.legacySection().deserialize(timeagoSplit[2].replace(Chat.COMPONENT_TAG_CLOSE, ""))
+                                                                    .hoverEvent(HoverEvent.showText(LegacyComponentSerializer.legacySection().deserialize(timeagoSplit[1]))))
+                                                            .append(LegacyComponentSerializer.legacySection().deserialize(" " + tag + " "))
+                                                            .append(LegacyComponentSerializer.legacySection().deserialize(Color.DARK_AQUA + rbd + dplayer + Color.WHITE + rbd + " " + Phrase.getPhraseSelector(Phrase.LOOKUP_CONTAINER, selector) + " "))
+                                                            .append(LegacyComponentSerializer.legacySection().deserialize(Color.DARK_AQUA + rbd + ItemTW.getItemTW(dname, false))
+                                                                    .hoverEvent(hoverEvent))
+                                                            .append(LegacyComponentSerializer.legacySection().deserialize(Color.WHITE + "x" + amount + ".")));
+                                                    // Chat.sendComponent(player2, timeago + " " + tag + " " + Phrase.build(Phrase.LOOKUP_CONTAINER, Color.DARK_AQUA + rbd + dplayer + Color.WHITE + rbd, "x" + amount, Util.createTooltip(Color.DARK_AQUA + rbd + ItemTW.getItemTW(dname), tooltip) + Color.WHITE, selector));
                                                     PluginChannelListener.getInstance().sendData(player2, Integer.parseInt(time), Phrase.LOOKUP_CONTAINER, selector, dplayer, dname, amount, x, y, z, wid, rbd, true, tag.contains("+"));
                                                 }
                                             }
@@ -1013,7 +1026,7 @@ public class LookupCommand {
                                                     String action = "a:block";
                                                     if (finalArgAction.contains(4) || finalArgAction.contains(5) || finalArgAction.contains(11) || amount > -1) {
                                                         byte[] metadata = data[11] == null ? null : data[11].getBytes(StandardCharsets.ISO_8859_1);
-                                                        String tooltip = Util.getEnchantments(metadata, dtype, amount);
+                                                        HoverEvent<HoverEvent.ShowItem> hoverEvent = Util.getHoverEvent(metadata, dtype, amount);
 
                                                         if (daction == 2 || daction == 3) {
                                                             phrase = Phrase.LOOKUP_ITEM; // {picked up|dropped}
@@ -1040,7 +1053,16 @@ public class LookupCommand {
                                                             action = "a:container";
                                                         }
 
-                                                        Chat.sendComponent(player2, timeago + " " + tag + " " + Phrase.build(phrase, Color.DARK_AQUA + rbd + dplayer + Color.WHITE + rbd, "x" + amount, Util.createTooltip(Color.DARK_AQUA + rbd + dname, tooltip) + Color.WHITE, selector));
+                                                        String[] timeagoSplit = timeago.split("\\|", 3);
+                                                        player2.sendMessage(Component.empty()
+                                                                .append(LegacyComponentSerializer.legacySection().deserialize(timeagoSplit[2].replace(Chat.COMPONENT_TAG_CLOSE, ""))
+                                                                        .hoverEvent(HoverEvent.showText(LegacyComponentSerializer.legacySection().deserialize(timeagoSplit[1]))))
+                                                                .append(LegacyComponentSerializer.legacySection().deserialize(" " + tag + " "))
+                                                                .append(LegacyComponentSerializer.legacySection().deserialize(Color.DARK_AQUA + rbd + dplayer + Color.WHITE + rbd + " " + Phrase.getPhraseSelector(phrase, selector) + " "))
+                                                                .append(LegacyComponentSerializer.legacySection().deserialize(Color.DARK_AQUA + rbd + ItemTW.getItemTW(dname, false))
+                                                                        .hoverEvent(hoverEvent))
+                                                                .append(LegacyComponentSerializer.legacySection().deserialize(Color.WHITE + "x" + amount + ".")));
+                                                        // Chat.sendComponent(player2, timeago + " " + tag + " " + Phrase.build(phrase, Color.DARK_AQUA + rbd + dplayer + Color.WHITE + rbd, "x" + amount, Util.createTooltip(Color.DARK_AQUA + rbd + ItemTW.getItemTW(dname), tooltip) + Color.WHITE, selector));
                                                         PluginChannelListener.getInstance().sendData(player2, Integer.parseInt(time), phrase, selector, dplayer, dname, (tag.contains("+") ? 1 : -1), x, y, z, wid, rbd, action.contains("container"), tag.contains("+"));
                                                     }
                                                     else {
@@ -1056,12 +1078,12 @@ public class LookupCommand {
                                                             tag = (daction != 0 ? Color.GREEN + "+" : Color.RED + "-");
                                                         }
 
-                                                        Chat.sendComponent(player2, timeago + " " + tag + " " + Phrase.build(phrase, Color.DARK_AQUA + rbd + dplayer + Color.WHITE + rbd, Color.DARK_AQUA + rbd + dname + Color.WHITE, selector));
+                                                        Chat.sendComponent(player2, timeago + " " + tag + " " + Phrase.build(phrase, Color.DARK_AQUA + rbd + dplayer + Color.WHITE + rbd, Color.DARK_AQUA + rbd + (daction == 3 ? ItemTW.getEntityTW(dname) : ItemTW.getItemTW(dname)) + Color.WHITE, selector));
                                                         PluginChannelListener.getInstance().sendData(player2, Integer.parseInt(time), phrase, selector, dplayer, dname, (tag.contains("+") ? 1 : -1), x, y, z, wid, rbd, false, tag.contains("+"));
                                                     }
 
                                                     action = (finalArgAction.size() == 0 ? " (" + action + ")" : "");
-                                                    Chat.sendComponent(player2, Color.WHITE + leftPadding + Color.GREY + "^ " + Util.getCoordinates(command.getName(), wid, x, y, z, true, true) + Color.GREY + Color.ITALIC + action);
+                                                    Chat.sendComponent(player2, Color.WHITE + leftPadding + Color.GREY + "^ " + Util.getCoordinates(command.getName(), wid, x, y, z, true, true, !dplayer.equals(player2.getName()) && !player2.hasPermission("coreprotect.teleport")) + Color.GREY + Color.ITALIC + action);
                                                 }
                                             }
                                             if (rows > displayResults) {

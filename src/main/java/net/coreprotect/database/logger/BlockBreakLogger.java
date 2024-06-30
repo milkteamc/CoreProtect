@@ -37,6 +37,10 @@ public class BlockBreakLogger {
                 return;
             }
 
+            if (ConfigHandler.blacklist.get(checkType.getKey().toString()) != null) {
+                return;
+            }
+
             if (!user.startsWith("#")) {
                 String cacheId = location.getBlockX() + "." + location.getBlockY() + "." + location.getBlockZ() + "." + Util.getWorldId(location.getWorld().getName());
                 CacheHandler.spreadCache.remove(cacheId);

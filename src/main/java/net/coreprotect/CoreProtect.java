@@ -1,9 +1,15 @@
 package net.coreprotect;
 
 import java.io.File;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
+import tw.maoyue.ItemTW;
 import org.bstats.bukkit.MetricsLite;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -24,7 +30,9 @@ import net.coreprotect.thread.NetworkHandler;
 import net.coreprotect.thread.Scheduler;
 import net.coreprotect.utility.Chat;
 import net.coreprotect.utility.Color;
+import net.coreprotect.utility.Teleport;
 import net.coreprotect.utility.Util;
+import org.jetbrains.annotations.NotNull;
 
 public final class CoreProtect extends JavaPlugin {
 
@@ -117,6 +125,16 @@ public final class CoreProtect extends JavaPlugin {
             catch (Exception e) {
                 // Failed to connect to bStats server or something else went wrong.
             }
+            // Load chinese item file
+            final File file = new File(getDataFolder(), "itemTW.yml");
+            try {
+                if (!file.exists()) {
+                    saveResource("itemTW.yml", false);
+                }
+            } catch (final @NotNull NullPointerException ignore) {
+                saveResource("itemTW.yml", false);
+            }
+            new ItemTW().loadItemTW(YamlConfiguration.loadConfiguration(file));
         }
         else {
             Chat.console(Phrase.build(Phrase.ENABLE_FAILED, ConfigHandler.EDITION_NAME));
@@ -165,6 +183,15 @@ public final class CoreProtect extends JavaPlugin {
             if (ConfigHandler.serverRunning && PaperAdapter.ADAPTER.isStopping(plugin.getServer())) {
                 for (Player player : plugin.getServer().getOnlinePlayers()) {
                     PlayerQuitListener.queuePlayerQuit(player);
+                }
+            }
+
+            if (!ConfigHandler.isFolia) {
+                Iterator<Entry<Location, BlockData>> iterator = Teleport.revertBlocks.entrySet().iterator();
+                while (iterator.hasNext()) {
+                    Entry<Location, BlockData> entry = iterator.next();
+                    entry.getKey().getBlock().setBlockData(entry.getValue());
+                    iterator.remove();
                 }
             }
 
