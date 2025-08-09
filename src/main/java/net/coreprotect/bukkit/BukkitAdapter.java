@@ -13,7 +13,6 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
-import org.bukkit.block.data.FaceAttachable;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -30,19 +29,11 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionType;
 
 import net.coreprotect.config.ConfigHandler;
-import net.coreprotect.utility.BlockUtils;
+import net.coreprotect.utility.Util;
 
-/**
- * Base adapter implementation for Bukkit API compatibility.
- * Provides default implementations for methods that work across multiple Minecraft versions.
- * Version-specific implementations extend this class to provide specialized behavior.
- */
 public class BukkitAdapter implements BukkitInterface {
 
-    /** The currently active adapter instance */
     public static BukkitInterface ADAPTER;
-
-    // Version constants for Bukkit implementations
     public static final int BUKKIT_V1_13 = 13;
     public static final int BUKKIT_V1_14 = 14;
     public static final int BUKKIT_V1_15 = 15;
@@ -51,40 +42,32 @@ public class BukkitAdapter implements BukkitInterface {
     public static final int BUKKIT_V1_18 = 18;
     public static final int BUKKIT_V1_19 = 19;
     public static final int BUKKIT_V1_20 = 20;
-    public static final int BUKKIT_V1_21 = 21;
 
-    /**
-     * Initializes the appropriate Bukkit adapter based on the server version.
-     * This method should be called during plugin initialization.
-     */
     public static void loadAdapter() {
         switch (ConfigHandler.SERVER_VERSION) {
             case BUKKIT_V1_13:
             case BUKKIT_V1_14:
             case BUKKIT_V1_15:
+                BukkitAdapter.ADAPTER = new BukkitAdapter();
+                break;
             case BUKKIT_V1_16:
-                ADAPTER = new BukkitAdapter();
+                BukkitAdapter.ADAPTER = new Bukkit_v1_16();
                 break;
             case BUKKIT_V1_17:
-                ADAPTER = new Bukkit_v1_17();
+                BukkitAdapter.ADAPTER = new Bukkit_v1_17();
                 break;
             case BUKKIT_V1_18:
-                ADAPTER = new Bukkit_v1_18();
+                BukkitAdapter.ADAPTER = new Bukkit_v1_18();
                 break;
             case BUKKIT_V1_19:
-                ADAPTER = new Bukkit_v1_19();
+                BukkitAdapter.ADAPTER = new Bukkit_v1_19();
                 break;
             case BUKKIT_V1_20:
-                ADAPTER = new Bukkit_v1_20();
-                break;
-            case BUKKIT_V1_21:
             default:
-                ADAPTER = new Bukkit_v1_21();
+                BukkitAdapter.ADAPTER = new Bukkit_v1_20();
                 break;
         }
     }
-
-    // -------------------- Basic data conversion methods --------------------
 
     @Override
     public String parseLegacyName(String name) {
@@ -95,8 +78,6 @@ public class BukkitAdapter implements BukkitInterface {
     public int getLegacyBlockId(Material material) {
         return -1;
     }
-
-    // -------------------- Entity methods --------------------
 
     @Override
     public boolean getEntityMeta(LivingEntity entity, List<Object> info) {
@@ -109,28 +90,6 @@ public class BukkitAdapter implements BukkitInterface {
     }
 
     @Override
-    public void getWolfVariant(org.bukkit.entity.Wolf wolf, List<Object> info) {
-        // Base implementation does nothing - Wolf variants only exist in 1.21+
-    }
-
-    @Override
-    public void setWolfVariant(org.bukkit.entity.Wolf wolf, Object value) {
-        // Base implementation does nothing - Wolf variants only exist in 1.21+
-    }
-
-    @Override
-    public EntityType getEntityType(Material material) {
-        switch (material) {
-            case END_CRYSTAL:
-                return EntityType.valueOf("ENDER_CRYSTAL");
-            default:
-                return EntityType.UNKNOWN;
-        }
-    }
-
-    // -------------------- Item handling methods --------------------
-
-    @Override
     public boolean getItemMeta(ItemMeta itemMeta, List<Map<String, Object>> list, List<List<Map<String, Object>>> metadata, int slot) {
         return false;
     }
@@ -141,69 +100,17 @@ public class BukkitAdapter implements BukkitInterface {
     }
 
     @Override
-    public Material getPlantSeeds(Material material) {
-        switch (material) {
-            case WHEAT:
-                return Material.WHEAT_SEEDS;
-            case PUMPKIN_STEM:
-                return Material.PUMPKIN_SEEDS;
-            case MELON_STEM:
-                return Material.MELON_SEEDS;
-            case BEETROOTS:
-                return Material.BEETROOT_SEEDS;
-            default:
-                return material;
-        }
-    }
-
-    @Override
-    public ItemStack adjustIngredient(MerchantRecipe recipe, ItemStack itemStack) {
-        return null;
-    }
-
-    @Override
-    public ItemStack getArrowMeta(Arrow arrow, ItemStack itemStack) {
-        PotionData data = arrow.getBasePotionData();
-        if (data.getType() != PotionType.valueOf("UNCRAFTABLE")) {
-            itemStack = new ItemStack(Material.TIPPED_ARROW);
-            PotionMeta meta = (PotionMeta) itemStack.getItemMeta();
-            meta.setBasePotionData(data);
-            for (PotionEffect effect : arrow.getCustomEffects()) {
-                meta.addCustomEffect(effect, false);
-            }
-            itemStack.setItemMeta(meta);
-        }
-
-        return itemStack;
-    }
-
-    // -------------------- Block methods --------------------
-
-    @Override
     public boolean isAttached(Block block, Block scanBlock, BlockData blockData, int scanMin) {
-        if (blockData instanceof Directional && blockData instanceof FaceAttachable) {
-            Directional directional = (Directional) blockData;
-            FaceAttachable faceAttachable = (FaceAttachable) blockData;
-
-            boolean scanButton = false;
-            switch (faceAttachable.getAttachedFace()) {
-                case WALL:
-                    scanButton = (scanMin < 5 && scanBlock.getRelative(directional.getFacing().getOppositeFace()).getLocation().equals(block.getLocation()));
-                    break;
-                case FLOOR:
-                    scanButton = (scanMin == 5);
-                    break;
-                case CEILING:
-                    scanButton = (scanMin == 6);
-                    break;
-                default:
-                    break;
-            }
-
-            return scanButton;
+        if (blockData instanceof Directional) {
+            return (scanMin < 5 && scanBlock.getRelative(((Directional) blockData).getFacing().getOppositeFace()).getLocation().equals(block.getLocation()));
         }
 
         return true; // unvalidated attachments default to true
+    }
+
+    @Override
+    public boolean isWall(BlockData blockData) {
+        return false;
     }
 
     @Override
@@ -217,15 +124,8 @@ public class BukkitAdapter implements BukkitInterface {
     }
 
     @Override
-    public boolean isInvisible(Material material) {
-        return BlockUtils.isAir(material);
-    }
-
-    // -------------------- Special block type checkers --------------------
-
-    @Override
     public boolean isItemFrame(Material material) {
-        return material == Material.ITEM_FRAME;
+        return (material == Material.ITEM_FRAME);
     }
 
     @Override
@@ -244,8 +144,72 @@ public class BukkitAdapter implements BukkitInterface {
     }
 
     @Override
-    public boolean isDecoratedPot(Material material) {
+    public boolean isGlowing(Sign sign, boolean isFront) {
         return false;
+    }
+
+    @Override
+    public boolean isWaxed(Sign sign) {
+        return false;
+    }
+
+    @Override
+    public boolean isInvisible(Material material) {
+        return Util.isAir(material);
+    }
+
+    @Override
+    public ItemStack adjustIngredient(MerchantRecipe recipe, ItemStack itemStack) {
+        return null;
+    }
+
+    @Override
+    public void setGlowing(Sign sign, boolean isFront, boolean isGlowing) {
+        return;
+    }
+
+    @Override
+    public void setColor(Sign sign, boolean isFront, int color) {
+        if (!isFront) {
+            return;
+        }
+
+        sign.setColor(DyeColor.getByColor(Color.fromRGB(color)));
+    }
+
+    @Override
+    public void setWaxed(Sign sign, boolean isWaxed) {
+        return;
+    }
+
+    @Override
+    public int getColor(Sign sign, boolean isFront) {
+        if (isFront) {
+            return sign.getColor().getColor().asRGB();
+        }
+
+        return 0;
+    }
+
+    @Override
+    public Material getPlantSeeds(Material material) {
+        switch (material) {
+            case WHEAT:
+                material = Material.WHEAT_SEEDS;
+                break;
+            case PUMPKIN_STEM:
+                material = Material.PUMPKIN_SEEDS;
+                break;
+            case MELON_STEM:
+                material = Material.MELON_SEEDS;
+                break;
+            case BEETROOTS:
+                material = Material.BEETROOT_SEEDS;
+                break;
+            default:
+        }
+
+        return material;
     }
 
     @Override
@@ -272,8 +236,6 @@ public class BukkitAdapter implements BukkitInterface {
     public ItemStack getChiseledBookshelfBook(BlockState blockState, PlayerInteractEvent event) {
         return null;
     }
-
-    // -------------------- Sign handling methods --------------------
 
     @Override
     public String getLine(Sign sign, int line) {
@@ -302,52 +264,19 @@ public class BukkitAdapter implements BukkitInterface {
     }
 
     @Override
-    public boolean isGlowing(Sign sign, boolean isFront) {
-        return false;
-    }
-
-    @Override
-    public boolean isWaxed(Sign sign) {
-        return false;
-    }
-
-    @Override
-    public void setGlowing(Sign sign, boolean isFront, boolean isGlowing) {
-        // Base implementation does nothing
-    }
-
-    @Override
-    public void setColor(Sign sign, boolean isFront, int color) {
-        if (!isFront) {
-            return;
+    public ItemStack getArrowMeta(Arrow arrow, ItemStack itemStack) {
+        PotionData data = arrow.getBasePotionData();
+        if (data.getType() != PotionType.UNCRAFTABLE) {
+            itemStack = new ItemStack(Material.TIPPED_ARROW);
+            PotionMeta meta = (PotionMeta) itemStack.getItemMeta();
+            meta.setBasePotionData(data);
+            for (PotionEffect effect : arrow.getCustomEffects()) {
+                meta.addCustomEffect(effect, false);
+            }
+            itemStack.setItemMeta(meta);
         }
 
-        sign.setColor(DyeColor.getByColor(Color.fromRGB(color)));
+        return itemStack;
     }
 
-    @Override
-    public void setWaxed(Sign sign, boolean isWaxed) {
-        // Base implementation does nothing
-    }
-
-    @Override
-    public int getColor(Sign sign, boolean isFront) {
-        if (isFront) {
-            return sign.getColor().getColor().asRGB();
-        }
-
-        return 0;
-    }
-
-    // -------------------- Registry methods --------------------
-
-    @Override
-    public Object getRegistryKey(Object value) {
-        return value;
-    }
-
-    @Override
-    public Object getRegistryValue(String key, Object tClass) {
-        return null;
-    }
 }

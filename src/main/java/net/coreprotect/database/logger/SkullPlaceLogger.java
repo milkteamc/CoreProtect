@@ -31,11 +31,9 @@ public class SkullPlaceLogger {
             if (block instanceof Skull) {
                 Skull skull = (Skull) block;
                 String skullOwner = "";
-                String skullSkin = null;
                 if (skull.hasOwner()) {
                     skullOwner = PaperAdapter.ADAPTER.getSkullOwner(skull);
-                    skullSkin = PaperAdapter.ADAPTER.getSkullSkin(skull);
-                    ResultSet resultSet = SkullStatement.insert(preparedStmt2, time, skullOwner, skullSkin);
+                    ResultSet resultSet = SkullStatement.insert(preparedStmt2, time, skullOwner);
                     if (Database.hasReturningKeys()) {
                         resultSet.next();
                         skullKey = resultSet.getInt(1);
